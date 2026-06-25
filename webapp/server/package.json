@@ -1,0 +1,39 @@
+{
+  "name": "@travelframe/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -b && node ./scripts/generate-fonts.mjs",
+    "dev": "tsx watch --tsconfig tsconfig.json src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/static": "^8.2.0",
+    "@fontsource/archivo-black": "^5.2.8",
+    "@fontsource/noto-sans-symbols-2": "^5.2.8",
+    "@fontsource/orbitron": "^5.2.8",
+    "@resvg/resvg-js": "^2.6.2",
+    "@travelframe/contracts": "*",
+    "fastify": "^5.6.1",
+    "fastify-plugin": "^5.1.0",
+    "node-cron": "^4.2.1",
+    "tar": "^7.5.1",
+    "zod": "^4.0.18"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "@types/node-cron": "^3.0.11",
+    "@types/tar": "^6.1.13",
+    "tsx": "^4.20.6",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.5",
+    "wawoff2": "^2.0.1"
+  }
+}

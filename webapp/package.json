@@ -1,0 +1,23 @@
+{
+  "name": "travelframe",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "shared/*",
+    "webapp",
+    "server"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=@travelframe/web",
+    "dev:server": "npm run dev --workspace=@travelframe/server",
+    "build:contracts": "npm run build --workspace=@travelframe/contracts",
+    "build:web": "npm run build --workspace=@travelframe/web",
+    "build:server": "npm run build --workspace=@travelframe/server",
+    "build": "npm run build:contracts && npm run build:web && npm run build:server",
+    "start:server": "npm run start --workspace=@travelframe/server",
+    "test": "npm run --workspaces --if-present test:run",
+    "lint": "npm run --workspaces --if-present lint",
+    "check:data": "npm run check:data --workspace=@travelframe/web"
+  }
+}

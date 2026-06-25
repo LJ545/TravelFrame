@@ -1,0 +1,28 @@
+#node modueles
+node_modules/
+npm-debug.log*
+
+#builds
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+#server data
+webapp/server/data/
+webapp/server/backups/
+
+#environment secrets
+.env
+.env.*
+!.env.example
+
+#Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.sln
+*.sw?
+*.local
