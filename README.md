@@ -1,6 +1,6 @@
 # TravelFrame — Self-Hosted
 <p align="center">
-  <img width="600" alt="20260620_123322_developed" src="https://github.com/user-attachments/assets/3295c381-45fd-4a1f-9136-0ccfedfb8f05" />
+  <img width="600" alt="20260620_123322_developed" src="https://github.com/user-attachments/assets/4d3786e5-4853-477a-8f5b-123a48fd055f" />
 </p>
 A self-hosted companion server for a **TravelFrame** e-ink client display.
 
