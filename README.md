@@ -2,9 +2,9 @@
 <p align="center">
   <img width="600" alt="20260620_123322_developed" src="https://github.com/user-attachments/assets/4d3786e5-4853-477a-8f5b-123a48fd055f" />
 </p>
-A self-hosted companion server for a **TravelFrame** e-ink client display.
+A self-hosted companion server for a TravelFrame e-ink client display.
 
-The web app lets you mark visited countries and states on an 800×480 world map, set a next destination with countdown, and push the result as a BMP to a physical e-ink frame. The frame polls the server every 30 seconds and refreshes only when the image changes.
+The web app lets you mark visited countries and states on an 800×480 world map, set a next destination with countdown, and push the result as a BMP to a physical e-ink frame. The frame polls the server every 30 seconds and refreshes only when the image changes. Should you be intersted in an already hosted plug and play version of this project take a look at [my website](https://www.travelframe.de).
 
 ---
 
