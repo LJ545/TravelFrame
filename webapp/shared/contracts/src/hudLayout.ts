@@ -65,7 +65,7 @@ export const HUD_LABEL_FONT = {
 
 const WEATHER_ICON_SVG: Record<string, string> = {
   '☀':
-    '<g transform="translate(775,50)" pointer-events="none">' +
+    '<g transform="translate(775,54)" pointer-events="none">' +
     '<circle cx="0" cy="0" r="4.5" fill="#000000"/>' +
     '<g fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round">' +
     '<line x1="0" y1="-9" x2="0" y2="-6.5"/>' +
@@ -78,14 +78,14 @@ const WEATHER_ICON_SVG: Record<string, string> = {
     '<line x1="-4.6" y1="4.6" x2="-6.4" y2="6.4"/>' +
     '</g></g>',
   '☁':
-    '<g transform="translate(775,50)" fill="#000000" stroke="none" pointer-events="none">' +
+    '<g transform="translate(775,54)" fill="#000000" stroke="none" pointer-events="none">' +
     '<circle cx="-3" cy="1" r="5"/>' +
     '<circle cx="3" cy="-2" r="6"/>' +
     '<circle cx="8" cy="1" r="4"/>' +
     '<rect x="-8" y="1" width="17" height="6"/>' +
     '</g>',
   '☂':
-    '<g transform="translate(775,50)" pointer-events="none">' +
+    '<g transform="translate(775,54)" pointer-events="none">' +
     '<path d="M-9,0 A9,9 0 0 1 9,0 Z" fill="#000000" stroke="none"/>' +
     '<g fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round">' +
     '<line x1="-3" y1="3" x2="-4" y2="8"/>' +
@@ -93,20 +93,20 @@ const WEATHER_ICON_SVG: Record<string, string> = {
     '<line x1="5" y1="3" x2="4" y2="8"/>' +
     '</g></g>',
   '☾':
-    '<g transform="translate(775,50)" pointer-events="none">' +
+    '<g transform="translate(775,54)" pointer-events="none">' +
     '<circle cx="0" cy="0" r="8.5" fill="#000000" stroke="none"/>' +
     '<circle cx="4" cy="0" r="7" fill="#ffffff" stroke="none"/>' +
     '</g>',
   '❄':
-    '<g transform="translate(775,50)" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" pointer-events="none">' +
+    '<g transform="translate(775,54)" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" pointer-events="none">' +
     '<line x1="-9" y1="0" x2="9" y2="0"/>' +
     '<line x1="-7.8" y1="-4.5" x2="7.8" y2="4.5"/>' +
     '<line x1="7.8" y1="-4.5" x2="-7.8" y2="4.5"/>' +
     '</g>',
   '⚡':
-    '<polygon transform="translate(775,50)" points="2,-9 -1,-1 3,-1 -2,9 1,1 -3,1" fill="#000000" stroke="none" pointer-events="none"/>',
+    '<polygon transform="translate(775,54)" points="2,-9 -1,-1 3,-1 -2,9 1,1 -3,1" fill="#000000" stroke="none" pointer-events="none"/>',
   '○':
-    '<circle transform="translate(775,50)" cx="0" cy="0" r="8" fill="none" stroke="#000000" stroke-width="2" pointer-events="none"/>',
+    '<circle transform="translate(775,54)" cx="0" cy="0" r="8" fill="none" stroke="#000000" stroke-width="2" pointer-events="none"/>',
 }
 
 export const buildWeatherIconSvg = (icon: string): string =>

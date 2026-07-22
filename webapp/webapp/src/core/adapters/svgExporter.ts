@@ -5,6 +5,7 @@ import {
   type HudTextItem,
   embedHudSnapshot,
 } from '@travelframe/contracts'
+import { BMP_VISIT_FILLS, type VisitShade } from '../domain/visitShading'
 import type { SvgExporter } from '../ports'
 
 const BMP_WIDTH = 800
@@ -15,7 +16,6 @@ const STROKE_COUNTRY_BORDER = '1.1'
 const STROKE_VISITED_BORDER = '1.2'
 const STROKE_STATE_BORDER = STROKE_VISITED_BORDER
 const STROKE_DOT = '0.9'
-const NEXT_DEST_FILL = '#888888'
 
 const MAPS_EXPORT_STYLE = `
 path, circle { shape-rendering: geometricPrecision; }
@@ -24,6 +24,12 @@ path, circle { shape-rendering: geometricPrecision; }
 const setCapJoin = (el: Element) => {
   el.setAttribute('stroke-linejoin', 'round')
   el.setAttribute('stroke-linecap', 'round')
+}
+
+const getVisitFill = (element: Element, isVisited: boolean): string => {
+  const shade = element.getAttribute('data-visit-shade') as VisitShade | null
+  if (shade && shade !== 'none') return BMP_VISIT_FILLS[shade]
+  return isVisited ? '#000000' : 'none'
 }
 
 const applyMapStrokes = (clone: SVGSVGElement) => {
@@ -47,8 +53,7 @@ const applyMapStrokes = (clone: SVGSVGElement) => {
 
   clone.querySelectorAll('path[data-country-code]').forEach((path) => {
     const isVisited = path.getAttribute('data-visited') === 'true'
-    const isNextDestination = path.getAttribute('data-next-destination') === 'true'
-    path.setAttribute('fill', isNextDestination ? NEXT_DEST_FILL : isVisited ? '#000000' : 'none')
+    path.setAttribute('fill', getVisitFill(path, isVisited))
     path.setAttribute('stroke', 'none')
     path.removeAttribute('stroke-width')
     path.removeAttribute('class')
@@ -57,8 +62,8 @@ const applyMapStrokes = (clone: SVGSVGElement) => {
 
   clone.querySelectorAll('circle[data-country-code]').forEach((circle) => {
     const isVisited = circle.getAttribute('data-visited') === 'true'
-    const isNextDestination = circle.getAttribute('data-next-destination') === 'true'
-    circle.setAttribute('fill', isNextDestination ? NEXT_DEST_FILL : isVisited ? '#000000' : '#ffffff')
+    const visitFill = getVisitFill(circle, isVisited)
+    circle.setAttribute('fill', visitFill === 'none' ? '#ffffff' : visitFill)
     if (isVisited) {
       circle.setAttribute('stroke', 'none')
       circle.removeAttribute('stroke-width')
@@ -73,8 +78,7 @@ const applyMapStrokes = (clone: SVGSVGElement) => {
 
   clone.querySelectorAll('path[data-state-id]').forEach((path) => {
     const isVisited = path.getAttribute('data-visited') === 'true'
-    const isNextDestination = path.getAttribute('data-next-destination') === 'true'
-    path.setAttribute('fill', isNextDestination ? NEXT_DEST_FILL : isVisited ? '#000000' : 'none')
+    path.setAttribute('fill', getVisitFill(path, isVisited))
     if (isVisited) {
       path.setAttribute('stroke', '#ffffff')
       path.setAttribute('stroke-width', STROKE_STATE_BORDER)

@@ -46,15 +46,19 @@ const runRefresh = async (deps: AutoRefreshDeps): Promise<void> => {
   }
   const state = await deps.userState.get(serial)
   const destinationName = state.nextDestination.name?.trim() ?? ''
+  const temperatureUnit = state.temperatureUnit ?? 'celsius'
+  const temperatureSuffix = temperatureUnit === 'fahrenheit' ? '°F' : '°C'
 
-  let weatherTemp = '--°C'
+  let weatherTemp = `--${temperatureSuffix}`
   let weatherIcon = '○'
   if (destinationName) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const weather = await fetchWeatherForCity(destinationName)
         if (weather) {
-          weatherTemp = `${Math.round(weather.tempC)}°C`
+          const temperature =
+            temperatureUnit === 'fahrenheit' ? weather.tempC * (9 / 5) + 32 : weather.tempC
+          weatherTemp = `${Math.round(temperature)}${temperatureSuffix}`
           weatherIcon = weather.icon
         }
         break 

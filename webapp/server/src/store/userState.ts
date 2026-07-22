@@ -9,6 +9,13 @@ export const userStateSchema = z.object({
   visited: z.array(z.string().min(1).max(8)),
   visitedStates: z.array(z.string().min(1).max(64)),
   stateMode: z.boolean(),
+  twoUserMode: z.boolean(),
+  activeUser: z.union([z.literal(1), z.literal(2)]),
+  visitedUser1: z.array(z.string().min(1).max(8)),
+  visitedStatesUser1: z.array(z.string().min(1).max(64)),
+  visitedUser2: z.array(z.string().min(1).max(8)),
+  visitedStatesUser2: z.array(z.string().min(1).max(64)),
+  temperatureUnit: z.enum(['celsius', 'fahrenheit']),
   nextDestination: z.object({
     name: z.string().max(64),
     date: z.string().max(32),

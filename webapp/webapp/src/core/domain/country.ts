@@ -16,6 +16,7 @@ export interface MapShape {
   path: string
   dot?: MapDot
   nudgeY?: number
+  centroid?: [number, number]
 }
 
 export interface CountryBorderShape {

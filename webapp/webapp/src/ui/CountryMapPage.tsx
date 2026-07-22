@@ -4,8 +4,10 @@ import { HUD_EMPH_FONT, HUD_LABEL_FONT, buildWeatherIconSvg } from '@travelframe
 import { ANTARCTICA_NUDGE_Y, MAP_TOP_MARGIN } from '../core/adapters/data'
 import { ApiError, apiClient } from '../core/adapters/deviceApi'
 import { countryMapService } from '../core/app'
+import { resolveVisitShade, type VisitShade } from '../core/domain/visitShading'
 import { useCountryMapViewModel } from './useCountryMapViewModel'
 import { useDeviceUserState } from './useDeviceUserState'
+import { SettingsPage } from './SettingsPage'
 import logoUrl from '../assets/logo.png'
 
 interface Props {
@@ -114,7 +116,11 @@ const computeDaysUntil = (isoDate: string): number | null => {
 }
 
 const DEST_COUNTRY_SUGGEST_LIMIT = 8
-const NEXT_DEST_FILL = '#a9a9a9'
+
+const DEST_PIN_PATH =
+  'M 0 0 C -6.5 -7.5 -9 -11.5 -9 -17 A 9 9 0 1 1 9 -17 C 9 -11.5 6.5 -7.5 0 0 Z'
+const DEST_PIN_STAR_POINTS =
+  '0,-22.4 1.26,-18.74 5.14,-18.67 2.04,-16.34 3.17,-12.63 0,-14.85 -3.17,-12.63 -2.04,-16.34 -5.14,-18.67 -1.26,-18.74'
 
 const rankDestinationCountry = (name: string, code: string, q: string): number => {
   if (!q) return 1_000
@@ -128,6 +134,7 @@ const rankDestinationCountry = (name: string, code: string, q: string): number =
 }
 
 export const CountryMapPage = ({ serial }: Props) => {
+  const [pageView, setPageView] = useState<'map' | 'settings'>('map')
   const [query, setQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const destinationCountryInputRef = useRef<HTMLInputElement | null>(null)
@@ -144,9 +151,19 @@ export const CountryMapPage = ({ serial }: Props) => {
     syncStatus,
     visitedStateIds,
     stateMode,
+    twoUserMode,
+    activeUser,
+    visitedUser1,
+    visitedStatesUser1,
+    visitedUser2,
+    visitedStatesUser2,
+    temperatureUnit,
     nextDestination,
     setVisitedStateIds,
     setStateMode,
+    setTwoUserMode,
+    setActiveUser,
+    setTemperatureUnit,
     setNextDestination,
   } = useDeviceUserState(serial)
 
@@ -264,10 +281,37 @@ export const CountryMapPage = ({ serial }: Props) => {
     () => new Map(mapShapes.map((shape) => [shape.code, shape.path])),
     [mapShapes],
   )
+  const combinedVisited = useMemo(
+    () => (twoUserMode ? new Set([...visitedUser1, ...visitedUser2]) : new Set(visited)),
+    [twoUserMode, visited, visitedUser1, visitedUser2],
+  )
+  const combinedVisitedStateIds = useMemo(
+    () =>
+      twoUserMode
+        ? new Set([...visitedStatesUser1, ...visitedStatesUser2])
+        : new Set(visitedStateIds),
+    [twoUserMode, visitedStateIds, visitedStatesUser1, visitedStatesUser2],
+  )
+  const getCountryShade = (countryCode: string): VisitShade =>
+    twoUserMode
+      ? resolveVisitShade(countryCode, visitedUser1, visitedUser2)
+      : visited.has(countryCode)
+        ? 'both'
+        : 'none'
+  const getStateShade = (stateId: string): VisitShade =>
+    twoUserMode
+      ? resolveVisitShade(stateId, visitedStatesUser1, visitedStatesUser2)
+      : visitedStateIds.has(stateId)
+        ? 'both'
+        : 'none'
+  const shadeClass = (shade: VisitShade) => {
+    if (shade === 'none') return ''
+    return twoUserMode ? `visited-${shade}` : 'visited'
+  }
   const isCountryFilledForBorder = (countryCode: string) => {
-    if (!stateMode || !topCountryCodes.has(countryCode)) return visited.has(countryCode)
+    if (!stateMode || !topCountryCodes.has(countryCode)) return combinedVisited.has(countryCode)
     const states = statesByCountry.get(countryCode) ?? []
-    return states.length > 0 && states.every((state) => visitedStateIds.has(state.id))
+    return states.length > 0 && states.every((state) => combinedVisitedStateIds.has(state.id))
   }
 
   const visitedInternationalStateBorders = useMemo(() => {
@@ -276,13 +320,13 @@ export const CountryMapPage = ({ serial }: Props) => {
     for (const st of stateShapes) {
       const borders = st.internationalBorders
       if (!borders?.length) continue
-      if (!visitedStateIds.has(st.id)) continue
+      if (!combinedVisitedStateIds.has(st.id)) continue
       if (!visibleStateIds.has(st.id)) continue
       borders.forEach((b, i) => {
         const neighborSubdivided = topCountryCodes.has(b.neighborCountryCode)
         const neighborOk = neighborSubdivided
-          ? Boolean(b.neighborSubId && visitedStateIds.has(b.neighborSubId))
-          : visited.has(b.neighborCountryCode)
+          ? Boolean(b.neighborSubId && combinedVisitedStateIds.has(b.neighborSubId))
+          : combinedVisited.has(b.neighborCountryCode)
         if (!neighborOk) return
         out.push({
           key: `${st.id}-${b.neighborCountryCode}-${i}`,
@@ -292,7 +336,14 @@ export const CountryMapPage = ({ serial }: Props) => {
       })
     }
     return out
-  }, [stateMode, stateShapes, topCountryCodes, visited, visitedStateIds, visibleStateIds])
+  }, [
+    stateMode,
+    stateShapes,
+    topCountryCodes,
+    combinedVisited,
+    combinedVisitedStateIds,
+    visibleStateIds,
+  ])
   const visitedCountryBorders = useMemo(
     () =>
       countryBorders.filter((border) => {
@@ -301,13 +352,30 @@ export const CountryMapPage = ({ serial }: Props) => {
         }
         return isCountryFilledForBorder(border.codeA) && isCountryFilledForBorder(border.codeB)
       }),
-    [countryBorders, stateMode, statesByCountry, topCountryCodes, visited, visitedStateIds],
+    [
+      countryBorders,
+      stateMode,
+      statesByCountry,
+      topCountryCodes,
+      combinedVisited,
+      combinedVisitedStateIds,
+    ],
   )
   const clipIdByCountry = useMemo(() => {
     const ids = new Map<string, string>()
     topCountryCodes.forEach((countryCode) => ids.set(countryCode, `state-clip-${countryCode.toLowerCase()}`))
     return ids
   }, [topCountryCodes])
+
+  const destinationPin = useMemo(() => {
+    if (!destinationCountryCode) return null
+    const shape = mapShapes.find((entry) => entry.code === destinationCountryCode)
+    if (!shape) return null
+    const nudgeY = shape.nudgeY ?? 0
+    if (shape.dot) return { x: shape.dot.cx, y: shape.dot.cy + nudgeY }
+    if (shape.centroid) return { x: shape.centroid[0], y: shape.centroid[1] + nudgeY }
+    return null
+  }, [mapShapes, destinationCountryCode])
 
   const toggleCountryInStateMode = (countryCode: string) => {
     const states = statesByCountry.get(countryCode)
@@ -328,24 +396,24 @@ export const CountryMapPage = ({ serial }: Props) => {
   }
 
   const isCountryVisited = (countryCode: string) => {
-    if (!stateMode) return visited.has(countryCode)
-    if (!topCountryCodes.has(countryCode)) return visited.has(countryCode)
+    if (!stateMode) return combinedVisited.has(countryCode)
+    if (!topCountryCodes.has(countryCode)) return combinedVisited.has(countryCode)
     return false
   }
 
   const visitedCountryTotal = useMemo(() => {
-    if (!stateMode) return visited.size
+    if (!stateMode) return combinedVisited.size
     let n = 0
     for (const { code } of allCountries) {
       const states = statesByCountry.get(code)
       if (states && states.length > 0) {
-        if (states.some((s) => visitedStateIds.has(s.id))) n += 1
-      } else if (visited.has(code)) {
+        if (states.some((s) => combinedVisitedStateIds.has(s.id))) n += 1
+      } else if (combinedVisited.has(code)) {
         n += 1
       }
     }
     return n
-  }, [stateMode, allCountries, visited, visitedStateIds, statesByCountry])
+  }, [stateMode, allCountries, combinedVisited, combinedVisitedStateIds, statesByCountry])
   const daysUntil = computeDaysUntil(nextDestination.date)
   const etdDayCountText = daysUntil !== null ? String(daysUntil) : '---'
   const destinationText = (nextDestination.name || '—').toUpperCase()
@@ -423,37 +491,43 @@ export const CountryMapPage = ({ serial }: Props) => {
     return () => controller.abort()
   }, [nextDestination.name])
 
+  const temperatureSuffix = temperatureUnit === 'fahrenheit' ? '°F' : '°C'
   const weatherTempLabel =
-    weather.kind === 'ready' ? `${Math.round(weather.tempC)}°C` : weather.kind === 'loading' ? '…°C' : '--°C'
+    weather.kind === 'ready'
+      ? `${Math.round(
+          temperatureUnit === 'fahrenheit' ? weather.tempC * (9 / 5) + 32 : weather.tempC,
+        )}${temperatureSuffix}`
+      : weather.kind === 'loading'
+        ? `…${temperatureSuffix}`
+        : `--${temperatureSuffix}`
   const weatherIconLabel = weather.kind === 'ready' ? weather.icon : '○'
+
+  const handleStateModeChange = (nextMode: boolean) => {
+    const stateIdsByCountry = new Map(
+      [...statesByCountry].map(([code, states]) => [code, states.map((state) => state.id)]),
+    )
+    setStateMode(nextMode, stateIdsByCountry)
+  }
+
+  if (pageView === 'settings') {
+    return (
+      <SettingsPage
+        stateMode={stateMode}
+        twoUserMode={twoUserMode}
+        temperatureUnit={temperatureUnit}
+        onStateModeChange={handleStateModeChange}
+        onTwoUserModeChange={setTwoUserMode}
+        onTemperatureUnitChange={setTemperatureUnit}
+        onBack={() => setPageView('map')}
+      />
+    )
+  }
 
   return (
     <main className="app-shell">
       <section className="panel list-panel">
         <div className="sidebar-header">
           <img src={logoUrl} alt="TravelFrame" className="app-logo" />
-          <label className="mode-toggle">
-            <span>State mode</span>
-            <input
-              type="checkbox"
-              checked={stateMode}
-              onChange={(event) => {
-                const nextMode = event.target.checked
-                if (nextMode) {
-                  setVisitedStateIds((current) => {
-                    const next = new Set(current)
-                    for (const code of visited) {
-                      const states = statesByCountry.get(code)
-                      if (!states?.length) continue
-                      states.forEach((state) => next.add(state.id))
-                    }
-                    return next
-                  })
-                }
-                setStateMode(nextMode)
-              }}
-            />
-          </label>
         </div>
         <label htmlFor="search" className="label">
           Search destinations
@@ -529,11 +603,45 @@ export const CountryMapPage = ({ serial }: Props) => {
 
       <section className="panel map-panel">
         <div className="map-toolbar">
-          <h2>World Map</h2>
+          <div className="map-toolbar-title">
+            <h2>World Map</h2>
+            {twoUserMode ? (
+              <div className="segmented-control user-switcher" role="group" aria-label="Active user">
+                <button
+                  type="button"
+                  className={activeUser === 1 ? 'active' : ''}
+                  aria-pressed={activeUser === 1}
+                  onClick={() => setActiveUser(1)}
+                >
+                  User 1
+                </button>
+                <button
+                  type="button"
+                  className={activeUser === 2 ? 'active' : ''}
+                  aria-pressed={activeUser === 2}
+                  onClick={() => setActiveUser(2)}
+                >
+                  User 2
+                </button>
+              </div>
+            ) : null}
+          </div>
           <div className="map-toolbar-actions">
             <span className={`sync-pill sync-${syncStatus.kind}`} aria-live="polite">
               {renderSyncLabel(syncStatus, loaded)}
             </span>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="Settings"
+              onClick={() => setPageView('settings')}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a8 8 0 0 0-1.7-1L15 3.5h-4L10.7 6A8 8 0 0 0 9 7L6.6 6l-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4L9 17a8 8 0 0 0 1.7 1l.3 2.5h4l.3-2.5a8 8 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6ZM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5Z"
+                />
+              </svg>
+            </button>
             <button
               type="button"
               className="primary-button"
@@ -655,11 +763,10 @@ export const CountryMapPage = ({ serial }: Props) => {
                         d={shape.path}
                         data-country-code={shape.code}
                         data-visited={isCountryVisited(shape.code)}
-                        data-next-destination={destinationCountryCode === shape.code}
-                        className={`country-shape ${isCountryVisited(shape.code) ? 'visited' : ''} ${
+                        data-visit-shade={getCountryShade(shape.code)}
+                        className={`country-shape ${shadeClass(getCountryShade(shape.code))} ${
                           visibleCodes.has(shape.code) ? '' : 'dimmed'
                         }`}
-                        style={destinationCountryCode === shape.code ? { fill: NEXT_DEST_FILL } : undefined}
                         onClick={() => {
                           if (stateMode) {
                             toggleCountryInStateMode(shape.code)
@@ -675,11 +782,10 @@ export const CountryMapPage = ({ serial }: Props) => {
                       d={shape.path}
                       data-country-code={shape.code}
                       data-visited={isCountryVisited(shape.code)}
-                      data-next-destination={destinationCountryCode === shape.code}
-                      className={`country-shape ${isCountryVisited(shape.code) ? 'visited' : ''} ${
+                      data-visit-shade={getCountryShade(shape.code)}
+                      className={`country-shape ${shadeClass(getCountryShade(shape.code))} ${
                         visibleCodes.has(shape.code) ? '' : 'dimmed'
                       }`}
-                      style={destinationCountryCode === shape.code ? { fill: NEXT_DEST_FILL } : undefined}
                       onClick={() => {
                         if (stateMode) {
                           toggleCountryInStateMode(shape.code)
@@ -696,16 +802,11 @@ export const CountryMapPage = ({ serial }: Props) => {
                       key={state.id}
                       d={state.path}
                       data-state-id={state.id}
-                      data-visited={visitedStateIds.has(state.id)}
-                      data-next-destination={destinationCountryCode === state.countryCode}
-                      className={`state-shape ${visitedStateIds.has(state.id) ? 'visited' : ''} ${
+                      data-visited={combinedVisitedStateIds.has(state.id)}
+                      data-visit-shade={getStateShade(state.id)}
+                      className={`state-shape ${shadeClass(getStateShade(state.id))} ${
                         visibleStateIds.has(state.id) ? '' : 'dimmed'
                       }`}
-                      style={
-                        destinationCountryCode === state.countryCode
-                          ? { fill: NEXT_DEST_FILL }
-                          : undefined
-                      }
                       fillRule="evenodd"
                       clipRule="evenodd"
                       clipPath={
@@ -756,12 +857,11 @@ export const CountryMapPage = ({ serial }: Props) => {
                       <circle
                         data-country-code={shape.code}
                         data-visited={isCountryVisited(shape.code)}
-                        data-next-destination={destinationCountryCode === shape.code}
-                        className={`country-dot ${isCountryVisited(shape.code) ? 'visited' : ''}`}
+                        data-visit-shade={getCountryShade(shape.code)}
+                        className={`country-dot ${shadeClass(getCountryShade(shape.code))}`}
                         cx={cx}
                         cy={pcy}
                         r={r}
-                        style={destinationCountryCode === shape.code ? { fill: NEXT_DEST_FILL } : undefined}
                         pointerEvents="none"
                       />
                     </g>
@@ -820,6 +920,21 @@ export const CountryMapPage = ({ serial }: Props) => {
                     />
                   ),
                 )}
+                {destinationPin ? (
+                  <g
+                    transform={`translate(${destinationPin.x}, ${destinationPin.y})`}
+                    pointerEvents="none"
+                  >
+                    <path
+                      d={DEST_PIN_PATH}
+                      fill="#ffffff"
+                      stroke="#000000"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                    <polygon points={DEST_PIN_STAR_POINTS} fill="#000000" stroke="none" />
+                  </g>
+                ) : null}
               </g>
             </g>
 

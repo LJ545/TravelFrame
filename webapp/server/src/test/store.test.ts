@@ -75,11 +75,20 @@ describe('UserStateStore', () => {
       visited: ['DEU', 'NLD'],
       visitedStates: ['USA-CA'],
       stateMode: true,
+      twoUserMode: true,
+      activeUser: 2,
+      visitedUser1: ['DEU'],
+      visitedStatesUser1: [],
+      visitedUser2: ['NLD'],
+      visitedStatesUser2: ['USA-CA'],
+      temperatureUnit: 'fahrenheit',
       nextDestination: { name: 'Tokyo', date: '2026-09-01' },
     })
     expect(written.updatedAt).not.toBe('')
     const read = await s.get('ABCDEFGH')
     expect(read.visited).toEqual(['DEU', 'NLD'])
+    expect(read.activeUser).toBe(2)
+    expect(read.temperatureUnit).toBe('fahrenheit')
     expect(read.nextDestination.name).toBe('Tokyo')
     expect(read.updatedAt).toBe(written.updatedAt)
   })

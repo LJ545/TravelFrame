@@ -11,6 +11,13 @@ export interface UserState {
   visited: string[]
   visitedStates: string[]
   stateMode: boolean
+  twoUserMode: boolean
+  activeUser: 1 | 2
+  visitedUser1: string[]
+  visitedStatesUser1: string[]
+  visitedUser2: string[]
+  visitedStatesUser2: string[]
+  temperatureUnit: 'celsius' | 'fahrenheit'
   nextDestination: {
     name: string
     date: string
@@ -29,6 +36,13 @@ export const emptyUserState = (now: string): UserState => ({
   visited: [],
   visitedStates: [],
   stateMode: false,
+  twoUserMode: false,
+  activeUser: 1,
+  visitedUser1: [],
+  visitedStatesUser1: [],
+  visitedUser2: [],
+  visitedStatesUser2: [],
+  temperatureUnit: 'celsius',
   nextDestination: { name: '', date: '', countryCode: '' },
   updatedAt: now,
 })

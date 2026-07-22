@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CountryMapPage } from './CountryMapPage'
@@ -24,6 +24,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  cleanup()
   vi.unstubAllGlobals()
 })
 
@@ -39,5 +40,19 @@ describe('CountryMapPage', () => {
     await user.click(norway)
 
     expect(norway).toHaveClass('selected')
-  })
+  }, 15000)
+
+  it('opens settings and enables the two-user switcher', () => {
+    render(<CountryMapPage serial={TEST_SERIAL} />)
+
+    expect(screen.queryByText('State mode')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('checkbox', { name: /Two-user mode/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Back to map/i }))
+
+    expect(screen.getByRole('group', { name: 'Active user' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'User 1' })).toHaveAttribute('aria-pressed', 'true')
+  }, 15000)
 })

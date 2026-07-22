@@ -230,7 +230,12 @@ for (const [code, parts] of byTopoCode) {
   if (dotFromCentroid) {
     mapShapes.push({ code, path: '', dot: { cx, cy, r: DOT_RADIUS }, ...nudgeFor(code) })
   } else {
-    mapShapes.push({ code, path: pathStr, ...nudgeFor(code) })
+    mapShapes.push({
+      code,
+      path: pathStr,
+      ...(Number.isFinite(cx) && Number.isFinite(cy) ? { centroid: [cx, cy] as [number, number] } : {}),
+      ...nudgeFor(code),
+    })
   }
 }
 

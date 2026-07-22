@@ -175,12 +175,75 @@ h2 {
   justify-content: space-between;
 }
 
+.map-toolbar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
 .map-toolbar-actions {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.icon-button,
+.secondary-button {
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  font: inherit;
+}
+
+.icon-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.2rem;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+}
+
+.segmented-control {
+  display: inline-flex;
+  border: 1px solid var(--border);
+}
+
+.segmented-control button {
+  border: 0;
+  border-right: 1px solid var(--border);
+  padding: 0.4rem 0.7rem;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  font: inherit;
+}
+
+.segmented-control button:last-child {
+  border-right: 0;
+}
+
+.segmented-control button.active {
+  background: #000;
+  color: #fff;
+}
+
+.user-switcher {
+  font-size: 0.82rem;
 }
 
 .primary-button {
@@ -365,6 +428,21 @@ h2 {
   fill: #000;
 }
 
+.country-shape.visited-user1,
+.country-dot.visited-user1 {
+  fill: #b0b0b0;
+}
+
+.country-shape.visited-user2,
+.country-dot.visited-user2 {
+  fill: #606060;
+}
+
+.country-shape.visited-both,
+.country-dot.visited-both {
+  fill: #000;
+}
+
 .country-shape.dimmed {
   opacity: 0.35;
 }
@@ -383,6 +461,12 @@ g.dimmed {
 
 .country-dot.visited {
   fill: #000;
+  stroke: none;
+}
+
+.country-dot.visited-user1,
+.country-dot.visited-user2,
+.country-dot.visited-both {
   stroke: none;
 }
 
@@ -415,6 +499,93 @@ g.country-dot-group.search-dimmed .country-dot.visited {
   fill: #000;
   stroke: #fff;
   stroke-width: 0.9;
+}
+
+.state-shape.visited-user1 {
+  fill: #b0b0b0;
+  stroke: #fff;
+  stroke-width: 0.9;
+}
+
+.state-shape.visited-user2 {
+  fill: #606060;
+  stroke: #fff;
+  stroke-width: 0.9;
+}
+
+.state-shape.visited-both {
+  fill: #000;
+  stroke: #fff;
+  stroke-width: 0.9;
+}
+
+.settings-shell {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--muted);
+}
+
+.settings-panel {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--muted);
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.settings-row {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 0;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.settings-row > span,
+.settings-row legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-row small {
+  color: var(--soft);
+  font-size: 0.85rem;
+}
+
+.settings-row input[type='checkbox'] {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 auto;
+}
+
+.settings-temperature {
+  flex-direction: column;
+  align-items: flex-start;
+  min-inline-size: 0;
+}
+
+.settings-temperature legend {
+  padding: 0;
+  float: none;
+  width: auto;
 }
 
 .land-shape,
